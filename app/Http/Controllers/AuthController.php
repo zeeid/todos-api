@@ -19,20 +19,18 @@ class AuthController extends Controller
             'password' => 'required|string|min:6'
         ]);
 
-        // 2. Cek jika validasi gagal
         if ($validator->fails()) {
             return response()->json([
                 'status'  => 'error',
                 'message' => 'Validation Error',
-                'errors'  => $validator->errors() // Mengembalikan list error
-            ], 422); // Status code 422 Unprocessable Entity
+                'errors'  => $validator->errors()
+            ], 422);
         }
 
-        // 3. Jika lolos, buat user baru
         $user = User::create([
-            'name'     => $request->name,
+            'name'     => strip_tags($request->name),
             'email'    => $request->email,
-            'password' => $request->password
+            'password' => $request->password 
         ]);
 
         return response()->json([
