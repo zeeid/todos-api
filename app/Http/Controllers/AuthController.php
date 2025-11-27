@@ -2,30 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        // echo json_encode($request);die();
-        $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|string|email|unique:users',
+        $validator = Validator::make($request->all(), [
+            'name'     => 'required|string',
+            'email'    => 'required|string|email|unique:users',
             'password' => 'required|string|min:6'
         ]);
 
+        // 2. Cek jika validasi gagal
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Validation Error',
+                'errors'  => $validator->errors() // Mengembalikan list error
+            ], 422); // Status code 422 Unprocessable Entity
+        }
+
+        // 3. Jika lolos, buat user baru
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
+            'name'     => $request->name,
+            'email'    => $request->email,
             'password' => Hash::make($request->password)
         ]);
 
         return response()->json([
-            'message' => 'User registered successfully'
+            'message' => 'User registered successfully',
+            'data'    => $user
         ], 201);
     }
 
