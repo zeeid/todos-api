@@ -15,4 +15,10 @@ class Todo extends Model
         'is_done',
         'user_id'
     ];
+
+    // Relasi ke user
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
