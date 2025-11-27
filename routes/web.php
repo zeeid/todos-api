@@ -3,5 +3,8 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    $data = array(
+        "status"    => true,
+        "pesan"     => "API INI HANYA UNTUK TEST PT Cipta Koin Digital !"
+    );
 });
