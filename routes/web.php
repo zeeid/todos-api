@@ -7,4 +7,6 @@ Route::get('/', function () {
         "status"    => true,
         "pesan"     => "API INI HANYA UNTUK TEST PT Cipta Koin Digital !"
     );
+
+    return $data;
 });
