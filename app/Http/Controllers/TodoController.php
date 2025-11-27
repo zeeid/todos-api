@@ -4,21 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\Todo;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class TodoController extends Controller
 {
     public function index()
     {
-        return Todo::where('user_id', auth()->id())->get();
+        $user = auth()->user();
+        return Todo::where('user_id', $user->id)->get();
     }
 
     public function store(Request $request)
     {
-        return Todo::create([
+        $request->validate([
+            'title' => 'required|string',
+            'description' => 'nullable|string'
+        ]);
+
+        $todo = Todo::create([
             'title' => $request->title,
             'description' => $request->description,
             'user_id' => auth()->id()
         ]);
+
+        return response()->json($todo, 201);
     }
 
     public function update(Request $request, $id)
