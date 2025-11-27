@@ -32,7 +32,7 @@ class AuthController extends Controller
         $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
-            'password' => Hash::make($request->password)
+            'password' => $request->password
         ]);
 
         return response()->json([
@@ -44,6 +44,26 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
+
+        // --- DEBUGGING START ---
+        // Cari user berdasarkan email
+        $user = User::where('email', $request->email)->first();
+        
+        if ($user) {
+            // Cek manual apakah password cocok
+            $cek = Hash::check($request->password, $user->password);
+            
+            // Matikan program dan tampilkan hasil
+            // Jika true: Password cocok (masalah di JWT)
+            // Jika false: Password tidak cocok (masalah di Register/Hashing)
+            // dd([
+            //     'email_input' => $request->email,
+            //     'password_input' => $request->password,
+            //     'password_di_db' => $user->password,
+            //     'apakah_cocok' => $cek ? 'YA' : 'TIDAK'
+            // ]); 
+        }
+        // --- DEBUGGING END ---
 
         if (! $token = JWTAuth::attempt($credentials)) {
             return response()->json(['error' => 'Invalid Credentials'], 401);
