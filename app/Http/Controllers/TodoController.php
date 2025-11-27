@@ -45,9 +45,9 @@ class TodoController extends Controller
 
         // 3. Create Data
         $todo = Todo::create([
-            'title'       => $request->title,
-            'description' => $request->description,
-            'user_id'     => auth()->id() // Ambil ID otomatis dari token
+            'title'       => strip_tags($request->title), 
+            'description' => $request->description ? strip_tags($request->description) : null,
+            'user_id'     => auth()->id()
         ]);
 
         return response()->json([
@@ -62,7 +62,6 @@ class TodoController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // 1. Cari Todo milik user (Manual Check untuk 404 JSON)
         $todo = Todo::where('id', $id)->where('user_id', auth()->id())->first();
 
         if (!$todo) {
@@ -72,11 +71,10 @@ class TodoController extends Controller
             ], 404);
         }
 
-        // 2. Validasi Input (Gunakan 'sometimes' agar user bisa update salah satu field saja)
         $validator = Validator::make($request->all(), [
             'title'       => 'sometimes|string|max:255',
             'description' => 'nullable|string',
-            'is_done'     => 'boolean' // Validasi untuk status selesai
+            'is_done'     => 'boolean'
         ]);
 
         if ($validator->fails()) {
@@ -88,7 +86,20 @@ class TodoController extends Controller
         }
 
         // 3. Update Data
-        $todo->update($request->all());
+        $dataToUpdate = $request->all();
+
+        // Cek jika ada input title, bersihkan dulu
+        if ($request->has('title')) {
+            $dataToUpdate['title'] = strip_tags($request->title);
+        }
+
+        // Cek jika ada input description, bersihkan dulu
+        if ($request->has('description')) {
+            $dataToUpdate['description'] = $request->description ? strip_tags($request->description) : null;
+        }
+
+        // Lakukan update dengan data yang sudah bersih
+        $todo->update($dataToUpdate);
 
         return response()->json([
             'status'  => 'success',
@@ -102,7 +113,6 @@ class TodoController extends Controller
      */
     public function destroy($id)
     {
-        // 1. Cari Todo milik user
         $todo = Todo::where('id', $id)->where('user_id', auth()->id())->first();
 
         if (!$todo) {
@@ -112,7 +122,6 @@ class TodoController extends Controller
             ], 404);
         }
 
-        // 2. Hapus
         $todo->delete();
 
         return response()->json([
